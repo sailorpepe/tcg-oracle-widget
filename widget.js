@@ -428,7 +428,8 @@
 
     async _doSearch(query) {
       try {
-        let url = `${API}/api/v1/search?query=${encodeURIComponent(query)}&limit=8&source=widget`;
+        const SEARCH_PROXY = "https://the-undesirables.vercel.app/api/litvm/search";
+        let url = `${SEARCH_PROXY}?query=${encodeURIComponent(query)}&limit=8`;
         if (this._gameFilter) url += `&game=${encodeURIComponent(this._gameFilter)}`;
         const res = await fetch(url);
         const json = await res.json();
