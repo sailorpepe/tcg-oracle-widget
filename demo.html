@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TCG Oracle Widget — Live Demo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #0a0a0f;
+      color: #e6edf3;
+      min-height: 100vh;
+      padding: 40px 20px 80px;
+    }
+
+    .hero {
+      text-align: center;
+      max-width: 700px;
+      margin: 0 auto 60px;
+    }
+    .hero h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, #58a6ff, #c084fc, #22d3ee);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero p {
+      font-size: 1.1rem;
+      color: #8b949e;
+      line-height: 1.7;
+    }
+    .hero code {
+      display: inline-block;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      padding: 12px 20px;
+      font-size: 0.85rem;
+      color: #58a6ff;
+      margin-top: 20px;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 40px;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    .demo-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+    .demo-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #8b949e;
+    }
+    .demo-bg {
+      padding: 32px;
+      border-radius: 16px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+    .demo-bg.dark-bg { background: #0d1117; }
+    .demo-bg.light-bg { background: #e8ecf0; }
+    .demo-bg.neon-bg { background: #050508; }
+    .demo-bg.holo-bg {
+      background: #0c0c1d;
+      background-image:
+        radial-gradient(ellipse at 20% 50%, rgba(192,132,252,0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 50%, rgba(34,211,238,0.08) 0%, transparent 50%);
+    }
+
+    .snippet {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 0.75rem;
+      color: #8b949e;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      width: 100%;
+      text-align: center;
+      user-select: all;
+    }
+    .snippet span { color: #c084fc; }
+    .snippet .attr { color: #58a6ff; }
+    .snippet .val { color: #3fb950; }
+
+    .section-title {
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin: 60px 0 40px;
+      color: #e6edf3;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 80px;
+      padding-top: 40px;
+      border-top: 1px solid #21262d;
+    }
+    .footer a {
+      color: #58a6ff;
+      text-decoration: none;
+    }
+    .footer a:hover { text-decoration: underline; }
+    .footer p {
+      color: #8b949e;
+      font-size: 0.85rem;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="hero">
+    <h1>🔮 TCG Oracle Widget</h1>
+    <p>
+      Embeddable trading card price intelligence for any website.<br>
+      Live oracle data. Graded premiums. On-chain verification. 4 skins.
+    </p>
+    <code>&lt;undsr-card product-id="84198" theme="dark"&gt;&lt;/undsr-card&gt;</code>
+  </div>
+
+  <h2 class="section-title">Themes</h2>
+
+  <div class="grid">
+
+    <!-- Dark Theme -->
+    <div class="demo-card">
+      <span class="demo-label">🌑 Dark</span>
+      <div class="demo-bg dark-bg">
+        <undsr-card product-id="84198" theme="dark"></undsr-card>
+      </div>
+      <div class="snippet">
+        &lt;<span>undsr-card</span> <span class="attr">product-id</span>=<span class="val">"84198"</span> <span class="attr">theme</span>=<span class="val">"dark"</span>&gt;
+      </div>
+    </div>
+
+    <!-- Light Theme -->
+    <div class="demo-card">
+      <span class="demo-label">☀️ Light</span>
+      <div class="demo-bg light-bg">
+        <undsr-card product-id="84198" theme="light"></undsr-card>
+      </div>
+      <div class="snippet">
+        &lt;<span>undsr-card</span> <span class="attr">product-id</span>=<span class="val">"84198"</span> <span class="attr">theme</span>=<span class="val">"light"</span>&gt;
+      </div>
+    </div>
+
+    <!-- Neon Theme -->
+    <div class="demo-card">
+      <span class="demo-label">⚡ Neon</span>
+      <div class="demo-bg neon-bg">
+        <undsr-card product-id="84198" theme="neon"></undsr-card>
+      </div>
+      <div class="snippet">
+        &lt;<span>undsr-card</span> <span class="attr">product-id</span>=<span class="val">"84198"</span> <span class="attr">theme</span>=<span class="val">"neon"</span>&gt;
+      </div>
+    </div>
+
+    <!-- Holographic Theme -->
+    <div class="demo-card">
+      <span class="demo-label">✨ Holographic</span>
+      <div class="demo-bg holo-bg">
+        <undsr-card product-id="84198" theme="holographic"></undsr-card>
+      </div>
+      <div class="snippet">
+        &lt;<span>undsr-card</span> <span class="attr">product-id</span>=<span class="val">"84198"</span> <span class="attr">theme</span>=<span class="val">"holographic"</span>&gt;
+      </div>
+    </div>
+
+  </div>
+
+  <h2 class="section-title">Different Cards</h2>
+
+  <div class="grid">
+    <div class="demo-card">
+      <span class="demo-label">Black Lotus — Holographic</span>
+      <div class="demo-bg holo-bg">
+        <undsr-card product-id="1196" theme="holographic"></undsr-card>
+      </div>
+    </div>
+    <div class="demo-card">
+      <span class="demo-label">Blue-Eyes White Dragon — Neon</span>
+      <div class="demo-bg neon-bg">
+        <undsr-card product-id="82498" theme="neon"></undsr-card>
+      </div>
+    </div>
+    <div class="demo-card">
+      <span class="demo-label">Pikachu Illustrator — Dark</span>
+      <div class="demo-bg dark-bg">
+        <undsr-card product-id="128619" theme="dark"></undsr-card>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <a href="https://github.com/sailorpepe/tcg-oracle-widget">github.com/sailorpepe/tcg-oracle-widget</a>
+    <p>Built by SailorPepe · The Undesirables LLC · Powered by 432K+ trading card products</p>
+  </div>
+
+  <script src="widget.js"></script>
+</body>
+</html>
