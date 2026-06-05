@@ -335,7 +335,7 @@
       ).join("");
 
       const gradeTabs = GRADES.map(g =>
-        `<button class="grade-tab${g === activeGrade ? ' active' : ''}" data-grade="${g}">${g.replace('PSA ', '')}</button>`
+        `<button class="grade-tab${g === activeGrade ? ' active' : ''}" data-grade="${g}">PSA ${g.replace('PSA ', '')}</button>`
       ).join("");
 
       this._shadow.innerHTML = `
@@ -348,6 +348,7 @@
             </div>
           </div>
           <div class="search-body">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:${t.textDim};margin-bottom:6px">🏆 Graded Slabs</div>
             <div class="grade-tabs">${gradeTabs}</div>
             ${bodyHTML}
             <div class="search-divider"></div>
