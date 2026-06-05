@@ -359,7 +359,7 @@ node = keccak256(abi.encodePacked(leaf))</code>
   (function() {
     const canvas = document.getElementById('particles');
     const ctx = canvas.getContext('2d');
-    let w, h, mouse = { x: 0, y: 0 }, particles = [];
+    let w, h, mouse = { x: -9999, y: -9999 }, particles = [];
 
     function resize() {
       w = canvas.width = window.innerWidth;
@@ -369,15 +369,22 @@ node = keccak256(abi.encodePacked(leaf))</code>
     window.addEventListener('resize', resize);
     document.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
 
-    const COUNT = 60;
+    const COUNT = 300;
+    const colors = [
+      [34, 211, 238],   // cyan
+      [52, 211, 153],   // emerald
+      [99, 102, 241],   // indigo
+    ];
     for (let i = 0; i < COUNT; i++) {
+      const c = colors[Math.floor(Math.random() * colors.length)];
       particles.push({
         x: Math.random() * w,
         y: Math.random() * h,
-        r: Math.random() * 1.5 + 0.5,
-        vx: (Math.random() - 0.5) * 0.3,
-        vy: (Math.random() - 0.5) * 0.3,
-        alpha: Math.random() * 0.3 + 0.05,
+        r: Math.random() * 2 + 0.3,
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: (Math.random() - 0.5) * 0.5,
+        alpha: Math.random() * 0.4 + 0.1,
+        color: c,
       });
     }
 
@@ -385,20 +392,20 @@ node = keccak256(abi.encodePacked(leaf))</code>
       ctx.clearRect(0, 0, w, h);
 
       for (let p of particles) {
-        // Subtle mouse attraction
+        // Mouse attraction — stronger pull
         const dx = mouse.x - p.x;
         const dy = mouse.y - p.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < 300) {
-          const force = (300 - dist) / 300 * 0.015;
+        if (dist < 400) {
+          const force = (400 - dist) / 400 * 0.03;
           p.vx += dx * force * 0.01;
           p.vy += dy * force * 0.01;
         }
 
         p.x += p.vx;
         p.y += p.vy;
-        p.vx *= 0.99;
-        p.vy *= 0.99;
+        p.vx *= 0.985;
+        p.vy *= 0.985;
 
         // Wrap
         if (p.x < -10) p.x = w + 10;
@@ -406,9 +413,14 @@ node = keccak256(abi.encodePacked(leaf))</code>
         if (p.y < -10) p.y = h + 10;
         if (p.y > h + 10) p.y = -10;
 
+        // Glow near mouse
+        const glow = dist < 200 ? 1 + (200 - dist) / 200 * 2 : 1;
+        const r = p.r * glow;
+        const a = Math.min(p.alpha * glow, 0.9);
+
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(34, 211, 238, ${p.alpha})`;
+        ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${p.color[0]}, ${p.color[1]}, ${p.color[2]}, ${a})`;
         ctx.fill();
       }
 
@@ -417,11 +429,12 @@ node = keccak256(abi.encodePacked(leaf))</code>
         for (let j = i + 1; j < particles.length; j++) {
           const a = particles[i], b = particles[j];
           const d = Math.hypot(a.x - b.x, a.y - b.y);
-          if (d < 120) {
+          if (d < 80) {
             ctx.beginPath();
             ctx.moveTo(a.x, a.y);
             ctx.lineTo(b.x, b.y);
-            ctx.strokeStyle = `rgba(34, 211, 238, ${0.06 * (1 - d / 120)})`;
+            const lineAlpha = 0.12 * (1 - d / 80);
+            ctx.strokeStyle = `rgba(34, 211, 238, ${lineAlpha})`;
             ctx.lineWidth = 0.5;
             ctx.stroke();
           }
