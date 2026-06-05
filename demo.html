@@ -4,216 +4,438 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TCG Oracle Widget — Live Demo</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <meta name="description" content="Embeddable trading card price widget with live oracle data, graded premiums, sparklines, and on-chain Merkle verification.">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Inter', system-ui, sans-serif;
-      background: #0a0a0f;
+      background: #06060b;
       color: #e6edf3;
       min-height: 100vh;
-      padding: 40px 20px 80px;
+      overflow-x: hidden;
     }
 
+    /* ═══ PARTICLE CANVAS ═══ */
+    #particles {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      z-index: 0; pointer-events: none;
+    }
+
+    /* ═══ HERO ═══ */
     .hero {
+      position: relative;
+      z-index: 1;
       text-align: center;
-      max-width: 700px;
-      margin: 0 auto 60px;
+      padding: 80px 20px 20px;
     }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(34,211,238,0.08);
+      border: 1px solid rgba(34,211,238,0.2);
+      border-radius: 20px; padding: 5px 14px;
+      font-size: 0.75rem; font-weight: 600;
+      color: #22d3ee; margin-bottom: 20px;
+      letter-spacing: 0.5px;
+    }
+    .hero-badge .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: #34d399; animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
     .hero h1 {
-      font-size: 2.5rem;
-      font-weight: 700;
-      margin-bottom: 12px;
-      background: linear-gradient(135deg, #58a6ff, #c084fc, #22d3ee);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      font-size: 3rem; font-weight: 800; margin-bottom: 16px;
+      letter-spacing: -1px;
+      background: linear-gradient(135deg, #e6edf3 0%, #8b949e 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
-    .hero p {
-      font-size: 1.1rem;
-      color: #8b949e;
-      line-height: 1.7;
+    .hero h1 em {
+      font-style: normal;
+      background: linear-gradient(135deg, #22d3ee, #34d399);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
-    .hero code {
-      display: inline-block;
-      background: #161b22;
-      border: 1px solid #30363d;
-      border-radius: 8px;
-      padding: 12px 20px;
-      font-size: 0.85rem;
-      color: #58a6ff;
-      margin-top: 20px;
-      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    .hero-sub {
+      font-size: 1.1rem; color: #6b7a90; max-width: 520px;
+      margin: 0 auto 40px; line-height: 1.7;
     }
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-      gap: 40px;
-      max-width: 1400px;
-      margin: 0 auto;
+    /* ═══ INTERACTIVE HERO WIDGET ═══ */
+    .hero-widget {
+      position: relative; z-index: 1;
+      display: flex; justify-content: center;
+      margin-bottom: 16px;
+    }
+    .hero-hint {
+      text-align: center; font-size: 0.8rem;
+      color: #484f58; margin-bottom: 60px;
+    }
+    .hero-hint kbd {
+      background: #161b22; border: 1px solid #30363d;
+      border-radius: 4px; padding: 2px 6px;
+      font-family: 'SF Mono', monospace; font-size: 0.7rem;
+      color: #8b949e;
+    }
+
+    /* ═══ SECTION ═══ */
+    .section-wrap {
+      position: relative; z-index: 1;
+      max-width: 1200px; margin: 0 auto;
+      padding: 0 24px;
+    }
+    .section-title {
+      text-align: center; font-size: 1.3rem;
+      font-weight: 700; margin: 0 0 32px;
+      color: #e6edf3; letter-spacing: -0.3px;
+    }
+    .section-title span { color: #6b7a90; font-weight: 400; }
+
+    /* ═══ THEME STRIP ═══ */
+    .theme-strip {
+      display: flex; justify-content: center;
+      gap: 24px; flex-wrap: wrap;
+      margin-bottom: 80px;
+    }
+    .theme-cell { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    .theme-label {
+      font-size: 0.7rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 1.5px;
+      color: #484f58;
+    }
+
+    /* ═══ EMBED CODE ═══ */
+    .embed-section {
+      max-width: 600px; margin: 0 auto 80px; text-align: center;
       padding: 0 20px;
     }
+    .embed-section p { color: #6b7a90; font-size: 0.95rem; margin-bottom: 16px; }
+    .embed-box {
+      background: #0d1117; border: 1px solid #21262d;
+      border-radius: 10px; padding: 20px;
+      font-family: 'JetBrains Mono','Fira Code',monospace;
+      font-size: 0.8rem; color: #e6edf3;
+      text-align: left; line-height: 1.8;
+      position: relative;
+    }
+    .embed-box .tag { color: #22d3ee; }
+    .embed-box .attr { color: #58a6ff; }
+    .embed-box .val { color: #34d399; }
+    .embed-box .cmt { color: #484f58; }
 
-    .demo-card {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 16px;
+    /* ═══ LIVE CARDS ═══ */
+    .live-grid {
+      display: flex; justify-content: center;
+      gap: 24px; flex-wrap: wrap;
+      margin-bottom: 80px;
     }
-    .demo-label {
-      font-size: 0.85rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: #8b949e;
-    }
-    .demo-bg {
-      padding: 32px;
-      border-radius: 16px;
-      width: 100%;
-      display: flex;
-      justify-content: center;
-    }
-    .demo-bg.dark-bg { background: #0d1117; }
-    .demo-bg.light-bg { background: #e8ecf0; }
-    .demo-bg.neon-bg { background: #050508; }
-    .demo-bg.holo-bg {
-      background: #0c0c1d;
-      background-image:
-        radial-gradient(ellipse at 20% 50%, rgba(192,132,252,0.08) 0%, transparent 50%),
-        radial-gradient(ellipse at 80% 50%, rgba(34,211,238,0.08) 0%, transparent 50%);
+    .live-cell { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    .live-label {
+      font-size: 0.7rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 1px;
+      color: #484f58;
     }
 
-    .snippet {
-      background: #161b22;
-      border: 1px solid #30363d;
-      border-radius: 8px;
-      padding: 10px 16px;
-      font-size: 0.75rem;
-      color: #8b949e;
-      font-family: 'JetBrains Mono', 'Fira Code', monospace;
-      width: 100%;
-      text-align: center;
-      user-select: all;
+    /* ═══ EDUCATION ═══ */
+    .edu { max-width: 800px; margin: 0 auto 80px; padding: 0 20px; }
+    .edu-intro { text-align: center; font-size: 1rem; color: #6b7a90; line-height: 1.8; margin-bottom: 40px; }
+    .edu-block {
+      position: relative; background: #0d1117;
+      border: 1px solid #1b2028; border-radius: 12px;
+      padding: 28px; margin-bottom: 20px;
     }
-    .snippet span { color: #c084fc; }
-    .snippet .attr { color: #58a6ff; }
-    .snippet .val { color: #3fb950; }
+    .edu-step {
+      position: absolute; top: -12px; left: 20px;
+      background: #22d3ee; color: #06060b;
+      font-size: 10px; font-weight: 800;
+      padding: 3px 10px; border-radius: 16px; letter-spacing: 1px;
+    }
+    .edu-block h3 { font-size: 1.1rem; font-weight: 700; color: #e6edf3; margin-bottom: 10px; }
+    .edu-block p { color: #6b7a90; line-height: 1.7; margin-bottom: 12px; font-size: 0.9rem; }
+    .edu-block strong { color: #e6edf3; }
+    .edu-note {
+      font-size: 0.8rem; color: #484f58;
+      border-left: 3px solid #22d3ee; padding-left: 12px; margin-top: 8px;
+    }
+    .edu-note code { background: #161b22; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; color: #22d3ee; }
+    .tree-diagram { background: #06060b; border: 1px solid #1b2028; border-radius: 8px; padding: 16px; overflow-x: auto; }
+    .tree-diagram pre { color: #22d3ee; font-family: 'JetBrains Mono',monospace; font-size: 0.65rem; line-height: 1.4; margin: 0; }
+    .code-block { background: #06060b; border: 1px solid #1b2028; border-radius: 8px; padding: 16px; margin: 12px 0; }
+    .code-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #484f58; margin-bottom: 6px; }
+    .code-block code { display: block; font-family: 'JetBrains Mono',monospace; font-size: 0.75rem; color: #e6edf3; line-height: 1.8; white-space: pre; }
+    .code-comment { color: #484f58; }
+    .flow-img { width: 100%; border-radius: 8px; margin-top: 12px; }
 
-    .section-title {
-      text-align: center;
-      font-size: 1.5rem;
-      font-weight: 700;
-      margin: 60px 0 40px;
-      color: #e6edf3;
+    .contracts-grid { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 12px; }
+    .contract-card {
+      display: block; padding: 12px 14px;
+      background: #06060b; border: 1px solid #1b2028;
+      border-radius: 8px; text-decoration: none; transition: all 0.2s;
     }
+    .contract-card:hover { border-color: #22d3ee30; transform: translateX(4px); }
+    .contract-name { font-size: 0.85rem; font-weight: 700; color: #e6edf3; }
+    .contract-desc { font-size: 0.75rem; color: #484f58; margin: 2px 0 4px; }
+    .contract-addr { font-family: 'JetBrains Mono',monospace; font-size: 0.7rem; color: #22d3ee; }
 
-    .footer {
-      text-align: center;
-      margin-top: 80px;
-      padding-top: 40px;
-      border-top: 1px solid #21262d;
+    /* ═══ FOOTER ═══ */
+    .page-footer {
+      position: relative; z-index: 1;
+      text-align: center; padding: 32px 20px 48px;
+      border-top: 1px solid #1b2028;
     }
-    .footer a {
-      color: #58a6ff;
-      text-decoration: none;
-    }
-    .footer a:hover { text-decoration: underline; }
-    .footer p {
-      color: #8b949e;
-      font-size: 0.85rem;
-      margin-top: 8px;
-    }
+    .page-footer a { color: #58a6ff; text-decoration: none; }
+    .page-footer a:hover { text-decoration: underline; }
+    .page-footer p { color: #484f58; font-size: 0.8rem; margin-top: 6px; }
   </style>
 </head>
 <body>
+
+  <!-- Particle Canvas -->
+  <canvas id="particles"></canvas>
+
+  <!-- Hero -->
   <div class="hero">
-    <h1>🔮 TCG Oracle Widget</h1>
-    <p>
-      Embeddable trading card price intelligence for any website.<br>
-      Live oracle data. Graded premiums. On-chain verification. 4 skins.
+    <div class="hero-badge"><span class="dot"></span> Live Oracle · 432K Products</div>
+    <h1>Trading Card <em>Price Intelligence</em></h1>
+    <p class="hero-sub">
+      One script tag. Live oracle data. Graded premiums. On-chain Merkle verification.
+      Search any card from the widget itself.
     </p>
-    <code>&lt;undsr-card product-id="84198" theme="dark"&gt;&lt;/undsr-card&gt;</code>
   </div>
 
-  <h2 class="section-title">Themes</h2>
-
-  <div class="grid">
-
-    <!-- Dark Theme -->
-    <div class="demo-card">
-      <span class="demo-label">🌑 Dark</span>
-      <div class="demo-bg dark-bg">
-        <undsr-card product-id="84198" theme="dark"></undsr-card>
-      </div>
-      <div class="snippet">
-        &lt;<span>undsr-card</span> <span class="attr">product-id</span>=<span class="val">"84198"</span> <span class="attr">theme</span>=<span class="val">"dark"</span>&gt;
-      </div>
-    </div>
-
-    <!-- Light Theme -->
-    <div class="demo-card">
-      <span class="demo-label">☀️ Light</span>
-      <div class="demo-bg light-bg">
-        <undsr-card product-id="84198" theme="light"></undsr-card>
-      </div>
-      <div class="snippet">
-        &lt;<span>undsr-card</span> <span class="attr">product-id</span>=<span class="val">"84198"</span> <span class="attr">theme</span>=<span class="val">"light"</span>&gt;
-      </div>
-    </div>
-
-    <!-- Neon Theme -->
-    <div class="demo-card">
-      <span class="demo-label">⚡ Neon</span>
-      <div class="demo-bg neon-bg">
-        <undsr-card product-id="84198" theme="neon"></undsr-card>
-      </div>
-      <div class="snippet">
-        &lt;<span>undsr-card</span> <span class="attr">product-id</span>=<span class="val">"84198"</span> <span class="attr">theme</span>=<span class="val">"neon"</span>&gt;
-      </div>
-    </div>
-
-    <!-- Holographic Theme -->
-    <div class="demo-card">
-      <span class="demo-label">✨ Holographic</span>
-      <div class="demo-bg holo-bg">
-        <undsr-card product-id="84198" theme="holographic"></undsr-card>
-      </div>
-      <div class="snippet">
-        &lt;<span>undsr-card</span> <span class="attr">product-id</span>=<span class="val">"84198"</span> <span class="attr">theme</span>=<span class="val">"holographic"</span>&gt;
-      </div>
-    </div>
-
+  <!-- Interactive Search Widget -->
+  <div class="hero-widget">
+    <undsr-card search theme="chrome" style="--undsr-width: 400px;"></undsr-card>
   </div>
+  <p class="hero-hint">Search any card above — try <kbd>charizard</kbd> <kbd>pikachu</kbd> <kbd>black lotus</kbd></p>
 
-  <h2 class="section-title">Different Cards</h2>
-
-  <div class="grid">
-    <div class="demo-card">
-      <span class="demo-label">Black Lotus — Holographic</span>
-      <div class="demo-bg holo-bg">
-        <undsr-card product-id="1196" theme="holographic"></undsr-card>
+  <!-- Theme Strip -->
+  <div class="section-wrap">
+    <div class="section-title">Themes</div>
+    <div class="theme-strip">
+      <div class="theme-cell">
+        <div class="theme-label">Chrome</div>
+        <undsr-card product-id="84150" theme="chrome"></undsr-card>
+      </div>
+      <div class="theme-cell">
+        <div class="theme-label">Light</div>
+        <undsr-card product-id="84150" theme="light"></undsr-card>
+      </div>
+      <div class="theme-cell">
+        <div class="theme-label">Neon</div>
+        <undsr-card product-id="84150" theme="neon"></undsr-card>
       </div>
     </div>
-    <div class="demo-card">
-      <span class="demo-label">Blue-Eyes White Dragon — Neon</span>
-      <div class="demo-bg neon-bg">
-        <undsr-card product-id="82498" theme="neon"></undsr-card>
+
+    <!-- Embed Code -->
+    <div class="embed-section">
+      <p>Add two lines to any HTML page:</p>
+      <div class="embed-box">
+        <span class="cmt">&lt;!-- Load the widget --&gt;</span><br>
+        <span class="tag">&lt;script</span> <span class="attr">src</span>=<span class="val">"https://oracle.the-undesirables.com/static/widget.js"</span><span class="tag">&gt;&lt;/script&gt;</span><br><br>
+        <span class="cmt">&lt;!-- Specific card --&gt;</span><br>
+        <span class="tag">&lt;undsr-card</span> <span class="attr">product-id</span>=<span class="val">"84198"</span> <span class="attr">theme</span>=<span class="val">"chrome"</span><span class="tag">&gt;&lt;/undsr-card&gt;</span><br><br>
+        <span class="cmt">&lt;!-- Or with search --&gt;</span><br>
+        <span class="tag">&lt;undsr-card</span> <span class="attr">search</span> <span class="attr">theme</span>=<span class="val">"chrome"</span><span class="tag">&gt;&lt;/undsr-card&gt;</span>
       </div>
     </div>
-    <div class="demo-card">
-      <span class="demo-label">Pikachu Illustrator — Dark</span>
-      <div class="demo-bg dark-bg">
-        <undsr-card product-id="128619" theme="dark"></undsr-card>
+
+    <!-- Live Cards -->
+    <div class="section-title">Live Cards <span>· real oracle data</span></div>
+    <div class="live-grid">
+      <div class="live-cell">
+        <div class="live-label">Pikachu Star · $3,200</div>
+        <undsr-card product-id="88111" theme="chrome"></undsr-card>
+      </div>
+      <div class="live-cell">
+        <div class="live-label">Celebi ex · 4 Grades</div>
+        <undsr-card product-id="84150" theme="neon"></undsr-card>
+      </div>
+      <div class="live-cell">
+        <div class="live-label">Mox Emerald · MTG</div>
+        <undsr-card product-id="1196" theme="dark"></undsr-card>
       </div>
     </div>
   </div>
 
-  <div class="footer">
+  <!-- Education -->
+  <div class="section-wrap">
+    <div class="section-title">How On-Chain Verification Works</div>
+    <div class="edu">
+      <div class="edu-intro">
+        Every price is cryptographically verifiable on-chain.
+        No trust required — anyone can prove the data hasn't been tampered with.
+      </div>
+
+      <div class="edu-block">
+        <div class="edu-step">01</div>
+        <h3>What is a Merkle Tree?</h3>
+        <p>
+          A Merkle tree lets you verify 276,000+ prices by storing a single 32-byte hash on-chain.
+          Each price is hashed into a "leaf," then pairs are hashed recursively until one root remains.
+        </p>
+        <div class="tree-diagram">
+<pre>
+                    ┌──────────────┐
+                    │  Merkle Root │  ← stored on-chain
+                    │  0xfdaf...   │
+                    └──────┬───────┘
+                           │
+                ┌──────────┴──────────┐
+                │                     │
+          ┌─────┴─────┐         ┌─────┴─────┐
+          │  Hash AB  │         │  Hash CD  │
+          └─────┬─────┘         └─────┬─────┘
+                │                     │
+          ┌─────┴─────┐         ┌─────┴─────┐
+          │           │         │           │
+     ┌────┴────┐ ┌────┴────┐ ┌────┴────┐ ┌────┴────┐
+     │ Leaf A  │ │ Leaf B  │ │ Leaf C  │ │ Leaf D  │
+     │Charizard│ │Pikachu  │ │Celebi   │ │Mox Ruby │
+     │$1,150   │ │$3,200   │ │$355     │ │$4,453   │
+     └─────────┘ └─────────┘ └─────────┘ └─────────┘
+</pre>
+        </div>
+      </div>
+
+      <div class="edu-block">
+        <div class="edu-step">02</div>
+        <h3>Double Hashing (Why It Matters)</h3>
+        <p>
+          The oracle uses <strong>double keccak256 hashing</strong> — each leaf is hashed twice.
+          This prevents <strong>second preimage attacks</strong> where an attacker could forge a leaf from an intermediate node.
+        </p>
+        <div class="code-block">
+          <div class="code-label">Leaf Construction</div>
+          <code>leaf = keccak256(abi.encodePacked(product_id, price, timestamp))
+<span class="code-comment">// OpenZeppelin hashes again internally:</span>
+node = keccak256(abi.encodePacked(leaf))</code>
+        </div>
+        <p class="edu-note">
+          Same pattern as OpenZeppelin's <code>MerkleProof.verify()</code> — the industry standard.
+        </p>
+      </div>
+
+      <div class="edu-block">
+        <div class="edu-step">03</div>
+        <h3>Verification Flow</h3>
+        <p>When you click "On-Chain Verified" on a widget, here's what's been proven:</p>
+        <img class="flow-img" src="verification-flow.png" alt="5-step verification flow: Daily Pipeline → Leaf Construction → Merkle Tree Built → Root Posted On-Chain → Anyone Can Verify">
+      </div>
+
+      <div class="edu-block">
+        <div class="edu-step">04</div>
+        <h3>Smart Contracts</h3>
+        <p>Three contracts power the on-chain oracle:</p>
+        <div class="contracts-grid">
+          <a class="contract-card" href="https://liteforge.explorer.caldera.xyz/address/0x96B124f50156589274ADF8F674509374752170Cd" target="_blank">
+            <div class="contract-name">Merkle Oracle V2</div>
+            <div class="contract-desc">276K products, trustless price verification</div>
+            <div class="contract-addr">0x96B1...70Cd</div>
+          </a>
+          <a class="contract-card" href="https://liteforge.explorer.caldera.xyz/address/0x04a128F4a7A0588D259F8abe9E260BbffF203072" target="_blank">
+            <div class="contract-name">TCG Price Oracle V2</div>
+            <div class="contract-desc">50 blue-chip TWAP feeds, hourly updates</div>
+            <div class="contract-addr">0x04a1...3072</div>
+          </a>
+          <a class="contract-card" href="https://liteforge.explorer.caldera.xyz/address/0xc159550e9e751d6E75A0A06Bb04cfA2f59aD636B" target="_blank">
+            <div class="contract-name">Graded Price Oracle</div>
+            <div class="contract-desc">PSA/BGS graded card prices from eBay solds</div>
+            <div class="contract-addr">0xc159...636B</div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
     <a href="https://github.com/sailorpepe/tcg-oracle-widget">github.com/sailorpepe/tcg-oracle-widget</a>
-    <p>Built by SailorPepe · The Undesirables LLC · Powered by 432K+ trading card products</p>
+    <p>Built by SailorPepe · The Undesirables LLC · 432K+ trading card products</p>
   </div>
 
   <script src="widget.js"></script>
+
+  <!-- Particle System -->
+  <script>
+  (function() {
+    const canvas = document.getElementById('particles');
+    const ctx = canvas.getContext('2d');
+    let w, h, mouse = { x: 0, y: 0 }, particles = [];
+
+    function resize() {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+    document.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+
+    const COUNT = 60;
+    for (let i = 0; i < COUNT; i++) {
+      particles.push({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        r: Math.random() * 1.5 + 0.5,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        alpha: Math.random() * 0.3 + 0.05,
+      });
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, w, h);
+
+      for (let p of particles) {
+        // Subtle mouse attraction
+        const dx = mouse.x - p.x;
+        const dy = mouse.y - p.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 300) {
+          const force = (300 - dist) / 300 * 0.015;
+          p.vx += dx * force * 0.01;
+          p.vy += dy * force * 0.01;
+        }
+
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vx *= 0.99;
+        p.vy *= 0.99;
+
+        // Wrap
+        if (p.x < -10) p.x = w + 10;
+        if (p.x > w + 10) p.x = -10;
+        if (p.y < -10) p.y = h + 10;
+        if (p.y > h + 10) p.y = -10;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(34, 211, 238, ${p.alpha})`;
+        ctx.fill();
+      }
+
+      // Draw connections
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const a = particles[i], b = particles[j];
+          const d = Math.hypot(a.x - b.x, a.y - b.y);
+          if (d < 120) {
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.strokeStyle = `rgba(34, 211, 238, ${0.06 * (1 - d / 120)})`;
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+          }
+        }
+      }
+
+      requestAnimationFrame(draw);
+    }
+    draw();
+  })();
+  </script>
+
+  <!-- WebMCP -->
+  <script async src="https://oracle.the-undesirables.com/static/tcg-oracle-webmcp.js"></script>
+
 </body>
 </html>
