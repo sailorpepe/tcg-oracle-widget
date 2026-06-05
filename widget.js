@@ -348,12 +348,12 @@
             </div>
           </div>
           <div class="search-body">
-            <div class="game-filter">
-              <select class="game-select" id="gs">${gameOptions}</select>
-            </div>
             <div class="grade-tabs">${gradeTabs}</div>
             ${bodyHTML}
             <div class="search-divider"></div>
+            <div class="game-filter">
+              <select class="game-select" id="gs">${gameOptions}</select>
+            </div>
             <input class="search-input" id="si" type="text" placeholder="🔍 Search 432K+ cards..." value="${query}" autocomplete="off">
           </div>
           <div class="footer">
@@ -427,8 +427,7 @@
 
     async _doSearch(query) {
       try {
-        const SEARCH_API = "https://the-undesirables.vercel.app/api/litvm/search";
-        let url = `${SEARCH_API}?query=${encodeURIComponent(query)}&limit=8`;
+        let url = `${API}/api/v1/search?query=${encodeURIComponent(query)}&limit=8&source=widget`;
         if (this._gameFilter) url += `&game=${encodeURIComponent(this._gameFilter)}`;
         const res = await fetch(url);
         const json = await res.json();
@@ -505,28 +504,24 @@
       let gradesHTML = "";
       if (grades.length > 0) {
         const cardName = encodeURIComponent(name);
+        const game = encodeURIComponent(category || '');
         const items = grades.map(g => {
           const mult = g.premium || (currentPrice && g.median_price ? (g.median_price / currentPrice).toFixed(1) + "x" : null);
-          const lowMargin = Math.max(0, Math.floor((g.low || 0) * 0.9));
-          const lowCeil = Math.ceil((g.low || 0) * 1.1);
-          const highFloor = Math.floor((g.high || 0) * 0.9);
-          const highCeil = Math.ceil((g.high || 0) * 1.1);
           const gradeEnc = encodeURIComponent(g.grade);
-          const ebayBase = `https://www.ebay.com/sch/i.html?_nkw=${cardName}+${gradeEnc}&LH_Complete=1&LH_Sold=1`;
-          const lowUrl = `${ebayBase}&_udlo=${lowMargin}&_udhi=${lowCeil}`;
-          const highUrl = `${ebayBase}&_udlo=${highFloor}&_udhi=${highCeil}`;
+          // Grade-specific eBay sold search — includes card name + grade
+          const ebayUrl = `https://www.ebay.com/sch/i.html?_nkw=${cardName}+${gradeEnc}&LH_Complete=1&LH_Sold=1&_sop=16`;
           return `<div class="grade-item">
             <div class="grade-top">
               <span class="grade-label">${g.grade} <span style="color:${t.textDim};font-weight:400;font-size:10px">(${g.listings || '?'} sold)</span></span>
               <span><span class="grade-price">${fmtUSD(g.median_price)}</span>${mult ? `<span class="grade-mult">${mult}</span>` : ""}</span>
             </div>
             <div class="grade-range">
-              <a href="${lowUrl}" target="_blank" rel="noopener">Low: ${fmtUSD(g.low)} ↗</a>
-              <a href="${highUrl}" target="_blank" rel="noopener">High: ${fmtUSD(g.high)} ↗</a>
+              <span style="color:${t.textDim};font-size:10px">Low: ${fmtUSD(g.low)} · High: ${fmtUSD(g.high)}</span>
+              <a href="${ebayUrl}" target="_blank" rel="noopener" style="font-size:10px">eBay Comps ↗</a>
             </div>
           </div>`;
         }).join("");
-        gradesHTML = `<div class="divider"></div><div class="section"><div class="section-label">Graded Premiums (Median)</div><div class="grade-grid">${items}</div>${ebayLink ? `<a class="source-link" href="${ebayLink}" target="_blank" rel="noopener">📊 Source: eBay Sold Listings →</a>` : ''}</div>`;
+        gradesHTML = `<div class="divider"></div><div class="section"><div class="section-label">Graded Premiums (Median)</div><div class="grade-grid">${items}</div></div>`;
       }
 
       const sparkHTML = spark ? `<div class="divider"></div><div class="section"><div class="section-label">30-Day Trend</div><div class="sparkline-wrap">${spark}</div></div>` : "";
