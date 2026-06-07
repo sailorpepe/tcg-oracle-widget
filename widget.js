@@ -22,6 +22,16 @@
 (function () {
   "use strict";
 
+  function escapeHtml(unsafe) {
+    if (!unsafe) return "";
+    return unsafe.toString()
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
   const API = "https://oracle.the-undesirables.com";
   const MERKLE_CONTRACT = "0x96B124f50156589274ADF8F674509374752170Cd";
   const EXPLORER = "https://liteforge.explorer.caldera.xyz/address/";
@@ -295,7 +305,7 @@
         const items = results.map(c =>
           `<div class="graded-item" data-pid="${c.product_id}">
             <div>
-              <div class="graded-name">${c.name || c.card_name}</div>
+              <div class="graded-name">${escapeHtml(c.name || c.card_name)}</div>
               <div class="graded-meta">${c.game || 'TCG'} · ${c.product_id}</div>
             </div>
             <span class="search-item-arrow">→</span>
@@ -304,7 +314,7 @@
         bodyHTML = `<div class="search-list">${items}</div>
           <div class="search-count">${results.length} results</div>`;
       } else if (query && results && results.length === 0) {
-        bodyHTML = `<div class="search-empty">No cards found for "${query}"</div>`;
+        bodyHTML = `<div class="search-empty">No cards found for "${escapeHtml(query)}"</div>`;
       } else if (graded && graded.length > 0) {
         // Graded bluechips — default landing
         const imgBase = 'https://product-images.tcgplayer.com/fit-in/200x279/';
@@ -312,7 +322,7 @@
           `<div class="graded-item" data-pid="${c.product_id}">
             <img class="graded-img" src="${imgBase}${c.product_id}.jpg" alt="" loading="lazy" onerror="this.style.display='none'">
             <div class="graded-info">
-              <div class="graded-name" title="${c.card_name}">${c.card_name}</div>
+              <div class="graded-name" title="${escapeHtml(c.card_name)}">${escapeHtml(c.card_name)}</div>
               <div class="graded-meta">${c.game || 'TCG'} · ${c.listings || '?'} sold</div>
             </div>
             <div class="graded-right">
@@ -355,7 +365,7 @@
             <div class="game-filter">
               <select class="game-select" id="gs">${gameOptions}</select>
             </div>
-            <input class="search-input" id="si" type="text" placeholder="🔍 Search 432K+ cards..." value="${query}" autocomplete="off">
+            <input class="search-input" id="si" type="text" placeholder="🔍 Search 432K+ cards..." value="${escapeHtml(query)}" autocomplete="off">
           </div>
           <div class="footer">
             <a class="footer-link" href="https://oracle.the-undesirables.com" target="_blank" rel="noopener">Powered by TCG Oracle</a>
@@ -550,10 +560,10 @@
             </div>
           </div>
           <div class="product-row">
-            <img class="card-img" id="cimg" src="https://product-images.tcgplayer.com/fit-in/200x279/${this._pid}.jpg" alt="${name}" loading="lazy">
+            <img class="card-img" id="cimg" src="https://product-images.tcgplayer.com/fit-in/200x279/${this._pid}.jpg" alt="${escapeHtml(name)}" loading="lazy">
             <div class="product-info">
-              <div class="product-name" title="${name}">${name}</div>
-              <div class="product-meta">${category}${currentPrice ? ` · ID ${this._pid}` : ""}</div>
+              <div class="product-name" title="${escapeHtml(name)}">${escapeHtml(name)}</div>
+              <div class="product-meta">${escapeHtml(category)}${currentPrice ? ` · ID ${this._pid}` : ""}</div>
             </div>
           </div>
           <div class="section">
