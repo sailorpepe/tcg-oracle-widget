@@ -154,7 +154,7 @@ Web Components and Shadow DOM are supported in all modern browsers.
 | **MCP Server** | [`pip install undesirables-mcp-server`](https://pypi.org/project/undesirables-mcp-server/) | Claude, Cursor, VS Code |
 | **ElizaOS Plugin** | [`npm i @the-undesirables/plugin-tcg-grader`](https://www.npmjs.com/package/@the-undesirables/plugin-tcg-grader) | Autonomous AI agents |
 | **REST API** | [`oracle.the-undesirables.com`](https://oracle.the-undesirables.com) | Direct HTTP integration |
-| **x402 Paid API** | USDC micropayments on Base | Premium data (Monte Carlo, AI grading) |
+| **x402 Paid API** | USDC micropayments on Base | Premium data (risk forecasts, AI grading) |
 
 ---
 
