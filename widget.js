@@ -365,7 +365,7 @@
             <div class="game-filter">
               <select class="game-select" id="gs">${gameOptions}</select>
             </div>
-            <input class="search-input" id="si" type="text" placeholder="🔍 Search 432K+ cards..." value="${escapeHtml(query)}" autocomplete="off">
+            <input class="search-input" id="si" type="text" placeholder="🔍 Search 446K+ cards..." value="${escapeHtml(query)}" autocomplete="off">
           </div>
           <div class="footer">
             <a class="footer-link" href="https://oracle.the-undesirables.com" target="_blank" rel="noopener">Powered by TCG Oracle</a>
